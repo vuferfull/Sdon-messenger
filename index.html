@@ -1,1022 +1,352 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
-<meta name="theme-color" content="#0b1711">
+<meta name="theme-color" content="#101914">
 <title>SDON Messenger</title>
 
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-storage-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
 <style>
 :root {
- --bg:#0b1711;
- --panel:rgba(19,43,30,.76);
- --panel2:rgba(12,30,20,.88);
- --green:#59e6b0;
- --green2:#29bd89;
- --text:#effaf3;
- --muted:#91a99a;
- --line:rgba(153,255,204,.18);
- --shadow:0 20px 65px rgba(0,0,0,.4);
+ --bg:#0b130f;
+ --panel:rgba(25,43,33,.78);
+ --panel2:rgba(32,54,42,.72);
+ --green:#36d995;
+ --green2:#9affca;
+ --text:#edfff4;
+ --muted:#9bb5a5;
+ --border:rgba(160,255,200,.13);
+ --danger:#ff7373;
 }
-
-* {
- box-sizing:border-box;
+*{box-sizing:border-box}
+body{
  margin:0;
- padding:0;
- font-family:Inter,"Segoe UI",Arial,sans-serif;
-}
-
-body {
  min-height:100vh;
- color:var(--text);
  background:
- radial-gradient(ellipse at 15% 10%,#17432f 0,transparent 40%),
- radial-gradient(ellipse at 90% 90%,#103c2b 0,transparent 38%),
+ radial-gradient(ellipse at 15% 10%,rgba(35,160,105,.18),transparent 45%),
+ radial-gradient(ellipse at 90% 90%,rgba(32,110,75,.18),transparent 40%),
  var(--bg);
-}
-
-button,input {font:inherit}
-button {cursor:pointer}
-.hidden {display:none!important}
-.page {display:none}
-.page.active {display:flex}
-
-#authPage,#regPage {
- min-height:100vh;
- align-items:center;
- justify-content:center;
- padding:22px;
-}
-
-.auth-card {
- width:min(100%,430px);
- padding:38px 30px;
- border:1px solid rgba(130,255,204,.25);
- border-radius:32px;
- background:linear-gradient(
-  145deg,
-  rgba(32,83,57,.67),
-  rgba(8,27,17,.78)
- );
- backdrop-filter:blur(45px) saturate(155%);
- -webkit-backdrop-filter:blur(45px) saturate(155%);
- box-shadow:var(--shadow),inset 0 1px 1px rgba(255,255,255,.08);
-}
-
-.brand {
- display:flex;
- align-items:center;
- justify-content:center;
- gap:13px;
- font-size:28px;
- font-weight:900;
- letter-spacing:3px;
- margin-bottom:15px;
-}
-
-.brand-mark {
- width:58px;
- height:58px;
- flex:none;
- border-radius:19px;
- display:grid;
- place-items:center;
- background:linear-gradient(145deg,rgba(91,245,190,.2),rgba(10,60,41,.8));
- border:1px solid rgba(111,255,205,.32);
- box-shadow:0 0 30px rgba(48,224,158,.18),inset 0 0 15px rgba(120,255,208,.12);
-}
-
-.brand-mark svg {width:46px;height:46px}
-.brand-mark circle {fill:url(#logoGradient);stroke:#8effd3;stroke-width:2}
-.brand-mark .dot {fill:#baffea;stroke:none}
-
-.auth-sub {
- text-align:center;
- color:var(--muted);
- font-size:17px;
- margin:10px 0 28px;
-}
-
-.auth-card input {
- width:100%;
- padding:18px;
- margin-bottom:14px;
  color:var(--text);
- background:rgba(3,18,10,.65);
- border:1px solid var(--line);
- border-radius:19px;
- outline:none;
- font-size:16px;
- transition:.2s;
+ font-family:Inter,Arial,sans-serif;
 }
-
-.auth-card input:focus {
- border-color:var(--green);
- box-shadow:0 0 0 3px rgba(89,230,176,.12);
-}
-
-.btn {
- border:0;
- border-radius:17px;
- padding:16px 20px;
- color:#082117;
- background:linear-gradient(120deg,#62e9b9,#29bd89);
- font-weight:850;
- font-size:17px;
- transition:.2s;
-}
-
-.btn:active {transform:scale(.97)}
-.btn.full {width:100%}
-
-.switch {
- text-align:center;
- color:var(--muted);
- margin-top:22px;
- font-size:15px;
-}
-
-.switch span {
- color:var(--green);
- font-weight:800;
- cursor:pointer;
-}
-
-#appPage {
- height:100dvh;
- min-height:560px;
- padding:13px;
- gap:13px;
- max-width:1600px;
- margin:auto;
-}
-
-.shell {
- display:grid;
- grid-template-columns:225px minmax(280px,1fr) 215px;
- gap:13px;
- width:100%;
- min-height:0;
- flex:1;
-}
-
-.sidebar,.main-panel,.rightbar {
- border:1px solid var(--line);
- border-radius:27px;
- background:rgba(13,39,25,.68);
- backdrop-filter:blur(38px) saturate(150%);
- -webkit-backdrop-filter:blur(38px) saturate(150%);
- box-shadow:var(--shadow),inset 0 1px 1px rgba(255,255,255,.045);
- min-height:0;
-}
-
-.sidebar,.rightbar {
- padding:17px;
- display:flex;
- flex-direction:column;
- gap:13px;
-}
-
-.user-card {
- display:flex;
- align-items:center;
- gap:11px;
- padding:11px;
- border-radius:18px;
- background:rgba(75,180,125,.12);
- border:1px solid var(--line);
- cursor:pointer;
-}
-
-.avatar {
- width:44px;
- height:44px;
- flex:none;
- border-radius:50%;
- display:grid;
- place-items:center;
- overflow:hidden;
- color:var(--green);
- background:rgba(67,213,151,.12);
- border:1px solid rgba(89,230,176,.45);
-}
-
-.avatar img {
- width:100%;
- height:100%;
- object-fit:cover;
-}
-
-.default-avatar-mark {
- width:32px;
- height:32px;
-}
-
-.user-meta {min-width:0}
-.user-meta b {display:block;overflow:hidden;text-overflow:ellipsis}
-.user-meta small {color:var(--muted)}
-
-.nav-label {
- color:#7eaa91;
- font-size:10px;
- font-weight:900;
- letter-spacing:1.7px;
- padding:8px 9px 0;
-}
-
-.nav-btn {
- display:flex;
- align-items:center;
- gap:12px;
- padding:13px;
- border-radius:15px;
- border:1px solid transparent;
- background:transparent;
- color:#c1d9ca;
- text-align:left;
- width:100%;
- transition:.2s;
-}
-
-.nav-btn .ico {
- width:22px;
- text-align:center;
- font-size:19px;
- color:var(--green);
-}
-
-.nav-btn:hover,.nav-btn.active {
- background:rgba(89,230,176,.12);
- border-color:rgba(89,230,176,.2);
- color:white;
-}
-
-.sidebar-spacer {flex:1}
-
-.main-panel {
- display:flex;
- flex-direction:column;
- overflow:hidden;
- padding:20px;
-}
-
-.topbar {
- display:flex;
- align-items:center;
- justify-content:space-between;
- padding-bottom:16px;
- border-bottom:1px solid var(--line);
- gap:12px;
-}
-
-.topbar h1 {font-size:22px}
-.eyebrow {
- font-size:10px;
- letter-spacing:1.7px;
- color:var(--green);
- font-weight:900;
- margin-bottom:5px;
-}
-
-.icon-btn {
- width:42px;
- height:42px;
- border-radius:14px;
- border:1px solid var(--line);
- background:rgba(255,255,255,.05);
- color:var(--green);
- font-size:19px;
-}
-
-.content-scroll {
- overflow:auto;
- flex:1;
- padding-top:16px;
- min-height:0;
-}
-
-.chat-list {display:flex;flex-direction:column;gap:9px}
-
-.chat-item {
- display:flex;
- align-items:center;
- gap:12px;
- padding:13px;
- border-radius:18px;
- background:rgba(255,255,255,.035);
- border:1px solid transparent;
- cursor:pointer;
-}
-
-.chat-item:hover {
- background:rgba(89,230,176,.09);
- border-color:var(--line);
-}
-
-.chat-info {min-width:0;flex:1}
-.chat-name {font-weight:800}
-.chat-preview {
- font-size:13px;
- color:var(--muted);
- white-space:nowrap;
- overflow:hidden;
- text-overflow:ellipsis;
- margin-top:4px;
-}
-
-.empty {
- min-height:220px;
- display:grid;
- place-content:center;
- text-align:center;
- color:var(--muted);
- gap:10px;
-}
-
-.empty .big {font-size:43px;color:var(--green)}
-
-.bottom-search {
- position:relative;
- margin-top:13px;
-}
-
-.search-input {
- width:100%;
- padding:15px 17px 15px 43px;
- border-radius:17px;
- border:1px solid var(--line);
- background:rgba(5,22,13,.7);
- color:var(--text);
- outline:none;
-}
-
-.bottom-search:before {
- content:"⌕";
- position:absolute;
- left:15px;
- top:7px;
- font-size:25px;
- color:var(--green);
-}
-
-.search-result {
- display:flex;
- align-items:center;
- justify-content:space-between;
- gap:10px;
- padding:11px;
- margin-top:7px;
- border-radius:14px;
+button,input,textarea{font:inherit}
+button{cursor:pointer}
+.hidden{display:none!important}
+.page{display:none;min-height:100vh}
+.page.active{display:flex}
+.glass{
  background:var(--panel);
- border:1px solid var(--line);
+ border:1px solid var(--border);
+ box-shadow:0 15px 50px rgba(0,0,0,.25),inset 0 1px rgba(255,255,255,.04);
+ backdrop-filter:blur(22px);
+ -webkit-backdrop-filter:blur(22px);
 }
-
-.search-result button {
+button{
+ color:var(--text);
+ border:1px solid var(--border);
+ background:rgba(255,255,255,.06);
+ border-radius:13px;
+ padding:11px 15px;
+ transition:.2s;
+}
+button:hover{background:rgba(54,217,149,.15);border-color:var(--green)}
+button.primary{
+ background:linear-gradient(135deg,#25bd7d,#16895c);
  border:0;
- border-radius:20px;
- padding:8px 13px;
- background:var(--green);
- color:#092116;
+ color:#041b10;
  font-weight:800;
 }
-
-.right-note {
- margin-top:auto;
- padding:14px;
- border-radius:17px;
- background:rgba(89,230,176,.08);
- border:1px solid var(--line);
- color:var(--muted);
- font-size:12px;
- line-height:1.6;
+button:disabled{opacity:.5;cursor:not-allowed}
+input,textarea{
+ color:var(--text);
+ background:rgba(0,0,0,.2);
+ border:1px solid var(--border);
+ border-radius:13px;
+ padding:13px 14px;
+ outline:none;
+ width:100%;
 }
-
-.chat-view {
- height:100%;
- display:flex;
- flex-direction:column;
- min-height:0;
+input:focus,textarea:focus{border-color:var(--green)}
+input::placeholder,textarea::placeholder{color:#829b8b}
+.logo{
+ width:48px;height:48px;border-radius:16px;
+ display:grid;place-items:center;
+ background:linear-gradient(145deg,#36d995,#126d4a);
+ color:#062316;font-size:25px;font-weight:900;
+ box-shadow:0 5px 25px #24c98233;
 }
-
-.chat-head {
- display:flex;
- align-items:center;
- gap:12px;
- padding-bottom:15px;
- border-bottom:1px solid var(--line);
+.brand{display:flex;align-items:center;gap:12px;font-size:23px;font-weight:850;letter-spacing:1px}
+.brand small{display:block;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:2px;margin-top:3px}
+.auth-wrap{width:100%;align-items:center;justify-content:center;padding:20px}
+.auth-card{width:min(420px,100%);padding:30px;border-radius:27px}
+.auth-card .brand{justify-content:center;margin-bottom:27px}
+.auth-card h2{text-align:center;margin:0 0 8px}
+.sub{text-align:center;color:var(--muted);font-size:14px;margin:0 0 24px}
+.field{margin:13px 0}
+.field label{display:block;font-size:13px;color:var(--muted);margin:0 0 7px}
+.auth-card .primary{width:100%;margin-top:12px;padding:14px}
+.switch{text-align:center;color:var(--muted);font-size:14px;margin-top:20px}
+.switch a{color:var(--green2);cursor:pointer}
+#toast{
+ position:fixed;z-index:1000;bottom:22px;left:50%;
+ transform:translate(-50%,20px);
+ opacity:0;pointer-events:none;
+ background:#1c3528;border:1px solid #42d99466;
+ border-radius:14px;padding:13px 19px;
+ box-shadow:0 10px 30px #0006;
+ transition:.25s;max-width:90%;text-align:center;
 }
-
-.chat-title {font-weight:850}
-.online {font-size:12px;color:var(--green);margin-top:3px}
-
-.messages {
- flex:1;
- overflow:auto;
- display:flex;
- flex-direction:column;
- gap:10px;
- padding:18px 4px;
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.app{width:100%;height:100vh;min-height:550px;padding:16px;gap:14px}
+.sidebar{
+ width:290px;flex-shrink:0;border-radius:23px;padding:20px;
+ display:flex;flex-direction:column;gap:17px;
 }
-
-.msg {
- max-width:min(80%,520px);
- padding:12px 15px;
- border-radius:18px 18px 18px 5px;
- background:#203d2d;
- border:1px solid var(--line);
- align-self:flex-start;
+.side-profile{
+ display:flex;align-items:center;gap:12px;padding:12px;
+ border-radius:17px;background:rgba(255,255,255,.045);cursor:pointer;
+}
+.avatar{
+ width:43px;height:43px;border-radius:50%;
+ display:grid;place-items:center;overflow:hidden;flex-shrink:0;
+ background:linear-gradient(135deg,#43e3a0,#176c4b);
+ color:#052719;font-weight:900;
+}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.side-name{font-weight:700;overflow:hidden;text-overflow:ellipsis}
+.side-handle{font-size:12px;color:var(--muted);margin-top:4px}
+.nav{display:grid;gap:8px}
+.nav button{text-align:left;padding:13px 15px}
+.nav button.active{background:rgba(54,217,149,.15);border-color:#36d99566}
+.sidebar-bottom{margin-top:auto;display:grid;gap:8px}
+.main-panel{flex:1;min-width:0;border-radius:23px;overflow:hidden;display:flex;flex-direction:column}
+.main-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.main-header h2{margin:0;font-size:21px}
+.main-content{padding:22px;overflow:auto;flex:1}
+.search{margin-bottom:15px}
+.user-list{display:grid;gap:9px}
+.user-item{
+ display:flex;align-items:center;gap:12px;
+ padding:12px;border:1px solid var(--border);
+ background:rgba(255,255,255,.035);border-radius:16px;
+}
+.user-item .user-info{flex:1;min-width:0}
+.user-item strong{display:block;overflow:hidden;text-overflow:ellipsis}
+.user-item small{color:var(--muted)}
+.user-item button{white-space:nowrap}
+.empty{color:var(--muted);text-align:center;padding:35px 15px}
+.chat-page{width:100%;height:100vh;min-height:500px;padding:16px}
+.chat-shell{width:min(100%,1000px);margin:auto;border-radius:23px;display:flex;flex-direction:column;overflow:hidden}
+.chat-header{padding:15px 18px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)}
+.chat-header .user-info{flex:1}
+.chat-header strong{display:block}
+.chat-header small{color:var(--muted)}
+.messages{
+ flex:1;min-height:0;overflow:auto;padding:18px;
+ display:flex;flex-direction:column;gap:8px;
+}
+.message{
+ max-width:min(78%,520px);padding:11px 14px;
+ border-radius:16px;background:rgba(255,255,255,.075);
  overflow-wrap:anywhere;
 }
-
-.msg.my {
- align-self:flex-end;
- background:linear-gradient(145deg,#21835e,#176044);
- border-radius:18px 18px 5px 18px;
-}
-
-.msg small {
- display:block;
- text-align:right;
- opacity:.65;
- font-size:10px;
- margin-top:5px;
-}
-
-.msg img {
- max-width:220px;
- max-height:220px;
- display:block;
- border-radius:12px;
-}
-
-.msg audio {max-width:230px}
-
-.composer {
- display:flex;
- align-items:center;
- gap:7px;
- padding:8px;
- border-radius:18px;
- border:1px solid var(--line);
- background:rgba(5,20,12,.82);
-}
-
-.message-input {
- margin:0;
- padding:11px;
- min-width:0;
- flex:1;
- color:var(--text);
- background:transparent;
- border:0;
- outline:none;
-}
-
-.tool-btn,.send-btn {
- width:40px;
- height:40px;
- flex:none;
- border:0;
- border-radius:13px;
- background:rgba(89,230,176,.12);
- color:var(--green);
- font-size:18px;
-}
-
-.send-btn {
- background:var(--green);
- color:#082117;
- font-weight:900;
-}
-
-.profile-view,.settings-view {
- max-width:560px;
- margin:0 auto;
- width:100%;
-}
-
-.profile-big {
- width:110px;
- height:110px;
- border-radius:50%;
- margin:15px auto;
- background:rgba(72,222,166,.12);
- border:2px solid var(--green);
- display:grid;
- place-items:center;
- overflow:hidden;
- cursor:pointer;
-}
-
-.profile-big img {
- width:100%;
- height:100%;
- object-fit:cover;
-}
-
-.profile-title {
- text-align:center;
- font-size:23px;
- font-weight:850;
-}
-
-.profile-hint {
- text-align:center;
- color:var(--green);
- font-size:13px;
- margin:7px 0 22px;
-}
-
-.setting-row {
- padding:15px;
- border:1px solid var(--line);
- border-radius:16px;
- background:rgba(255,255,255,.035);
- margin:9px 0;
-}
-
-.mobile-menu {display:none}
-
-.toast {
- position:fixed;
- z-index:100;
- top:18px;
- left:50%;
- transform:translate(-50%,-20px);
- opacity:0;
- pointer-events:none;
- padding:14px 19px;
- border-radius:16px;
- background:rgba(20,54,36,.92);
- border:1px solid #8df4bd66;
- backdrop-filter:blur(25px);
- box-shadow:0 12px 35px #0007;
- color:#eafff1;
- transition:.25s;
- max-width:90vw;
- text-align:center;
-}
-
-.toast.show {
- opacity:1;
- transform:translate(-50%,0);
-}
-
-@media(max-width:900px) {
- #appPage {padding:8px}
- .shell {grid-template-columns:175px minmax(0,1fr)}
- .rightbar {display:none}
-}
-
-@media(max-width:620px) {
- #appPage {padding:0;height:100dvh;min-height:0}
- .shell {display:flex;gap:0}
- .sidebar {display:none}
- .main-panel {
-  border:0;
-  border-radius:0;
-  padding:14px 13px;
-  width:100%;
-  background:rgba(10,37,22,.78);
-  backdrop-filter:blur(40px);
- }
- .mobile-menu {
-  display:flex;
-  gap:8px;
-  overflow:auto;
-  padding:9px 0 13px;
- }
- .mobile-menu .nav-btn {
-  white-space:nowrap;
-  width:auto;
-  padding:10px 12px;
-  background:rgba(89,230,176,.07);
-  border:1px solid var(--line);
- }
- .topbar h1 {font-size:20px}
- .chat-head .back {
-  display:block;
-  background:transparent;
-  border:0;
-  color:var(--green);
-  font-size:25px;
- }
- .composer {gap:4px;padding:6px}
- .tool-btn {width:34px;height:36px}
- .send-btn {width:38px;height:38px}
- .msg {max-width:88%}
+.message.mine{align-self:flex-end;background:rgba(40,190,125,.2);border:1px solid #36d99533}
+.message.theirs{align-self:flex-start}
+.message img{max-width:100%;max-height:280px;border-radius:10px;display:block}
+.message audio{max-width:100%}
+.message-time{font-size:10px;color:var(--muted);display:block;text-align:right;margin-top:6px}
+.composer{padding:13px;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border)}
+.composer input{flex:1;min-width:0}
+.composer button{padding:12px}
+#emojiPanel{padding:10px;border-top:1px solid var(--border);display:flex;gap:7px;flex-wrap:wrap}
+#emojiPanel button{padding:7px 10px}
+.profile-wrap{width:100%;align-items:center;justify-content:center;padding:20px}
+.profile-card{width:min(440px,100%);padding:25px;border-radius:24px;text-align:center}
+.profile-card .avatar{width:100px;height:100px;margin:15px auto;font-size:35px}
+.profile-card h2{margin:10px}
+.profile-card p{color:var(--muted)}
+.profile-card input[type=file]{margin:15px 0}
+.settings-card{max-width:600px;margin:auto;padding:22px;border-radius:20px}
+.settings-card h3{margin-top:0}
+.settings-card p{color:var(--muted);line-height:1.5}
+.mobile-menu{display:none}
+@media(max-width:760px){
+ .app{padding:8px;gap:8px}
+ .sidebar{width:70px;padding:10px;align-items:center}
+ .sidebar .brand-text,.sidebar .side-info,.sidebar .nav-label,.sidebar .side-handle{display:none}
+ .sidebar .brand{gap:0}
+ .sidebar .logo{width:45px;height:45px}
+ .side-profile{padding:5px;border:0;background:none}
+ .sidebar .nav button{width:48px;height:48px;padding:0;text-align:center;font-size:18px}
+ .sidebar .nav button span{display:none}
+ .sidebar-bottom button{width:48px;height:45px;padding:0;font-size:17px}
+ .main-header{padding:15px}
+ .main-content{padding:13px}
+ .chat-page{padding:6px}
+ .chat-shell{height:calc(100vh - 12px)}
+ .message{max-width:88%}
 }
 </style>
 </head>
+
 <body>
 
-<div id="toast" class="toast"></div>
+<div id="toast"></div>
 
-<!-- Продолжение HTML будет во второй части --><!-- ЭКРАН ВХОДА -->
-<section id="authPage" class="page active">
- <div class="auth-card">
-
+<!-- ВХОД -->
+<section id="authPage" class="page active auth-wrap">
+ <div class="auth-card glass">
   <div class="brand">
-   <span class="brand-mark">
-    <svg viewBox="0 0 100 100">
-     <defs>
-      <radialGradient id="logoGradient">
-       <stop offset="0%" stop-color="#baffea"/>
-       <stop offset="55%" stop-color="#43dca5"/>
-       <stop offset="100%" stop-color="#087454"/>
-      </radialGradient>
-     </defs>
-     <circle cx="50" cy="27" r="19"/>
-     <circle cx="28" cy="68" r="19"/>
-     <circle cx="72" cy="68" r="19"/>
-     <circle class="dot" cx="50" cy="27" r="5"/>
-     <circle class="dot" cx="28" cy="68" r="5"/>
-     <circle class="dot" cx="72" cy="68" r="5"/>
-    </svg>
-   </span>
-   SDON
+   <div class="logo">•••</div>
+   <div>SDON<small>MESSENGER</small></div>
   </div>
-
-  <div class="auth-sub">Твой круг общения</div>
-
-  <input id="loginInput" placeholder="Email" type="email" autocomplete="email">
-  <input id="passInput" placeholder="Пароль" type="password" autocomplete="current-password">
-
-  <button class="btn full" onclick="login()">Войти</button>
-
-  <div class="switch">
-   Нет аккаунта?
-   <span onclick="toggleAuth()">Зарегистрироваться</span>
-  </div>
-
+  <h2>С возвращением</h2>
+  <p class="sub">Войди в свой аккаунт SDON</p>
+  <form id="loginForm">
+   <div class="field">
+    <label>Email</label>
+    <input id="loginEmail" type="email" placeholder="name@example.com" autocomplete="email" required>
+   </div>
+   <div class="field">
+    <label>Пароль</label>
+    <input id="loginPassword" type="password" placeholder="Твой пароль" autocomplete="current-password" required>
+   </div>
+   <button class="primary" type="submit" id="loginButton">Войти</button>
+  </form>
+  <div class="switch">Нет аккаунта? <a id="goRegister">Создать аккаунт</a></div>
  </div>
 </section>
 
-<!-- ЭКРАН РЕГИСТРАЦИИ -->
-<section id="regPage" class="page">
- <div class="auth-card">
-
+<!-- РЕГИСТРАЦИЯ -->
+<section id="registerPage" class="page auth-wrap">
+ <div class="auth-card glass">
   <div class="brand">
-   <span class="brand-mark">
-    <svg viewBox="0 0 100 100">
-     <defs>
-      <radialGradient id="logoGradientReg">
-       <stop offset="0%" stop-color="#baffea"/>
-       <stop offset="55%" stop-color="#43dca5"/>
-       <stop offset="100%" stop-color="#087454"/>
-      </radialGradient>
-     </defs>
-     <circle cx="50" cy="27" r="19" fill="url(#logoGradientReg)" stroke="#8effd3" stroke-width="2"/>
-     <circle cx="28" cy="68" r="19" fill="url(#logoGradientReg)" stroke="#8effd3" stroke-width="2"/>
-     <circle cx="72" cy="68" r="19" fill="url(#logoGradientReg)" stroke="#8effd3" stroke-width="2"/>
-     <circle class="dot" cx="50" cy="27" r="5"/>
-     <circle class="dot" cx="28" cy="68" r="5"/>
-     <circle class="dot" cx="72" cy="68" r="5"/>
-    </svg>
-   </span>
-   SDON
+   <div class="logo">•••</div>
+   <div>SDON<small>MESSENGER</small></div>
   </div>
-
-  <div class="auth-sub">Создай свой аккаунт</div>
-
-  <input id="regNick" placeholder="Никнейм" maxlength="24">
-  <input id="regEmail" placeholder="Email" type="email" autocomplete="email">
-  <input id="regPass" placeholder="Пароль" type="password" autocomplete="new-password">
-  <input id="regPass2" placeholder="Повтори пароль" type="password" autocomplete="new-password">
-
-  <button class="btn full" onclick="register()">Создать аккаунт</button>
-
-  <div class="switch">
-   Уже есть аккаунт?
-   <span onclick="toggleAuth()">Войти</span>
-  </div>
-
+  <h2>Создать аккаунт</h2>
+  <p class="sub">Присоединяйся к SDON</p>
+  <form id="registerForm">
+   <div class="field">
+    <label>Имя пользователя</label>
+    <input id="registerName" type="text" placeholder="Например, Alex" minlength="3" maxlength="24" required>
+   </div>
+   <div class="field">
+    <label>Уникальный @username</label>
+    <input id="registerUsername" type="text" placeholder="alex_123" minlength="3" maxlength="24" required>
+   </div>
+   <div class="field">
+    <label>Email</label>
+    <input id="registerEmail" type="email" placeholder="name@example.com" autocomplete="email" required>
+   </div>
+   <div class="field">
+    <label>Пароль</label>
+    <input id="registerPassword" type="password" placeholder="Минимум 6 символов" minlength="6" required>
+   </div>
+   <div class="field">
+    <label>Повтори пароль</label>
+    <input id="registerPassword2" type="password" placeholder="Повтори пароль" minlength="6" required>
+   </div>
+   <button class="primary" type="submit" id="registerButton">Зарегистрироваться</button>
+  </form>
+  <div class="switch">Уже есть аккаунт? <a id="goLogin">Войти</a></div>
  </div>
 </section>
 
-<!-- ГЛАВНОЕ ОКНО -->
-<section id="appPage" class="page">
-
- <div class="shell">
-
-  <!-- ЛЕВАЯ ПАНЕЛЬ -->
-  <aside class="sidebar">
-
-   <div class="brand">
-    <span class="brand-mark">
-     <svg viewBox="0 0 100 100">
-      <defs>
-       <radialGradient id="logoSide">
-        <stop offset="0%" stop-color="#baffea"/>
-        <stop offset="55%" stop-color="#43dca5"/>
-        <stop offset="100%" stop-color="#087454"/>
-       </radialGradient>
-      </defs>
-      <circle cx="50" cy="27" r="19" fill="url(#logoSide)"/>
-      <circle cx="28" cy="68" r="19" fill="url(#logoSide)"/>
-      <circle cx="72" cy="68" r="19" fill="url(#logoSide)"/>
-     </svg>
-    </span>
-    SDON
-   </div>
-
-   <div class="user-card" onclick="openProfile()">
-    <div class="avatar" id="sideAvatar">
-     <svg class="default-avatar-mark" viewBox="0 0 100 100">
-      <g fill="none" stroke="currentColor" stroke-width="8">
-       <circle cx="50" cy="27" r="18"/>
-       <circle cx="28" cy="68" r="18"/>
-       <circle cx="72" cy="68" r="18"/>
-      </g>
-     </svg>
-    </div>
-
-    <div class="user-meta">
-     <b id="sideName">Профиль</b>
-     <small>Мой аккаунт</small>
-    </div>
-   </div>
-
-   <div class="nav-label">ОБЩЕНИЕ</div>
-
-   <button class="nav-btn active" onclick="showSection('chats')">
-    <span class="ico">▤</span> Чаты
-   </button>
-
-   <button class="nav-btn" onclick="showSection('contacts')">
-    <span class="ico">♧</span> Контакты
-   </button>
-
-   <div class="sidebar-spacer"></div>
-
-   <button class="nav-btn" onclick="openProfile()">
-    <span class="ico">◉</span> Профиль
-   </button>
-
-   <button class="nav-btn" onclick="showSection('settings')">
-    <span class="ico">⚙</span> Настройки
-   </button>
-
-   <button class="nav-btn" onclick="showSection('support')">
-    <span class="ico">?</span> Поддержка
-   </button>
-
-   <button class="nav-btn" onclick="logout()">
-    <span class="ico">↪</span> Выйти
-   </button>
-
-  </aside>
-
-  <!-- ЦЕНТРАЛЬНАЯ ПАНЕЛЬ -->
-  <main class="main-panel">
-
-   <div class="topbar">
-    <div>
-     <div class="eyebrow">SDON MESSENGER</div>
-     <h1 id="sectionTitle">Твои чаты</h1>
-    </div>
-
-    <button class="icon-btn" onclick="openProfile()">◉</button>
-   </div>
-
-   <div class="mobile-menu">
-
-    <button class="nav-btn active" onclick="showSection('chats')">
-     ▤ Чаты
-    </button>
-
-    <button class="nav-btn" onclick="showSection('contacts')">
-     ♧ Контакты
-    </button>
-
-    <button class="nav-btn" onclick="showSection('settings')">
-     ⚙ Настройки
-    </button>
-
-    <button class="nav-btn" onclick="showSection('support')">
-     ? Помощь
-    </button>
-
-   </div>
-
-   <div id="content" class="content-scroll">
-    <div id="chatList" class="chat-list"></div>
-   </div>
-
-   <div class="bottom-search">
-    <input
-     id="searchInput"
-     class="search-input"
-     placeholder="Найти людей по имени..."
-     oninput="searchUsers()"
-    >
-
-    <div id="searchResults"></div>
-   </div>
-
-  </main>
-
-  <!-- ПРАВАЯ ПАНЕЛЬ -->
-  <aside class="rightbar">
-
-   <div class="nav-label">АККАУНТ</div>
-
-   <button class="nav-btn" onclick="openProfile()">
-    <span class="ico">◉</span> Мой профиль
-   </button>
-
-   <button class="nav-btn" onclick="showSection('settings')">
-    <span class="ico">⚙</span> Настройки
-   </button>
-
-   <div class="nav-label">ПОМОЩЬ</div>
-
-   <button class="nav-btn" onclick="showSection('support')">
-    <span class="ico">?</span> Поддержка
-   </button>
-
-   <div class="right-note">
-    Sdon — общение в своём ритме.
-    <br>
-    <b style="color:var(--green)">Связь без границ.</b>
-   </div>
-
-  </aside>
-
- </div>
-</section>
-
-<!-- ОКНО ЧАТА -->
-<section id="chatPage" class="page"
- style="height:100dvh;padding:14px;max-width:1000px;margin:auto;width:100%">
-
- <div class="main-panel chat-view">
-
-  <div class="chat-head">
-
-   <button class="back" onclick="closeChat()">‹</button>
-
-   <div class="avatar" id="chatAvatar">●</div>
-
-   <div>
-    <div class="chat-title" id="chatUserName">Чат</div>
-    <div class="online">Личный диалог</div>
-   </div>
-
+<!-- ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
+<section id="appPage" class="page app">
+ <aside class="sidebar glass">
+  <div class="brand">
+   <div class="logo">•••</div>
+   <div class="brand-text">SDON<small>MESSENGER</small></div>
   </div>
 
+  <div class="side-profile" id="openProfile">
+   <div class="avatar" id="sideAvatar">S</div>
+   <div class="side-info">
+    <div class="side-name" id="sideName">Пользователь</div>
+    <div class="side-handle" id="sideHandle">@username</div>
+   </div>
+  </div>
+
+  <nav class="nav">
+   <button class="active" data-section="chats">💬 <span>Чаты</span></button>
+   <button data-section="contacts">👥 <span>Контакты</span></button>
+   <button data-section="search">🔎 <span>Поиск</span></button>
+   <button data-section="settings">⚙️ <span>Настройки</span></button>
+   <button data-section="support">❔ <span>Помощь</span></button>
+  </nav>
+
+  <div class="sidebar-bottom">
+   <button id="logoutButton">↪ <span class="nav-label">Выйти</span></button>
+  </div>
+ </aside>
+
+ <main class="main-panel glass">
+  <header class="main-header">
+   <h2 id="sectionTitle">Чаты</h2>
+   <div id="headerHint" style="color:var(--muted);font-size:12px">SDON Messenger</div>
+  </header>
+  <div class="main-content" id="mainContent"></div>
+ </main>
+</section>
+
+<!-- ЧАТ -->
+<section id="chatPage" class="page chat-page">
+ <div class="chat-shell glass">
+  <header class="chat-header">
+   <button id="backToApp">←</button>
+   <div class="avatar" id="chatAvatar">S</div>
+   <div class="user-info">
+    <strong id="chatUserName">Пользователь</strong>
+    <small id="chatUserHandle">@username</small>
+   </div>
+  </header>
   <div class="messages" id="messagesContainer"></div>
-
-  <div class="composer">
-
-   <button class="tool-btn"
-    onclick="document.getElementById('photoInput').click()">
-    ▧
-   </button>
-
-   <input
-    id="photoInput"
-    type="file"
-    accept="image/*"
-    class="hidden"
-    onchange="sendPhoto(event)"
-   >
-
-   <button class="tool-btn" onclick="toggleEmoji()">☺</button>
-
-   <input
-    class="message-input"
-    id="msgInput"
-    placeholder="Написать сообщение..."
-    onkeydown="if(event.key==='Enter')sendMessage()"
-   >
-
-   <button class="tool-btn" id="voiceBtn" onclick="toggleVoice()">
-    🎙
-   </button>
-
-   <button class="send-btn" onclick="sendMessage()">➤</button>
-
+  <div id="emojiPanel" class="hidden">
+   <button type="button">😀</button><button type="button">😂</button>
+   <button type="button">❤️</button><button type="button">🔥</button>
+   <button type="button">👍</button><button type="button">🥰</button>
+   <button type="button">😎</button><button type="button">😭</button>
+   <button type="button">🎉</button><button type="button">🤔</button>
   </div>
-
-  <div id="emojiPanel" class="hidden"
-   style="padding:10px;display:flex;gap:12px;flex-wrap:wrap">
-
-   <span onclick="addEmoji('😀')">😀</span>
-   <span onclick="addEmoji('😂')">😂</span>
-   <span onclick="addEmoji('😍')">😍</span>
-   <span onclick="addEmoji('🔥')">🔥</span>
-   <span onclick="addEmoji('💚')">💚</span>
-   <span onclick="addEmoji('😎')">😎</span>
-   <span onclick="addEmoji('🎉')">🎉</span>
-   <span onclick="addEmoji('👋')">👋</span>
-
-  </div>
-
+  <form class="composer" id="messageForm">
+   <button type="button" id="emojiButton" title="Эмодзи">☺</button>
+   <button type="button" id="photoButton" title="Фото">＋</button>
+   <input id="photoInput" type="file" accept="image/*" class="hidden">
+   <input id="messageInput" type="text" placeholder="Написать сообщение..." autocomplete="off">
+   <button type="button" id="voiceButton" title="Голосовое сообщение">🎙</button>
+   <button class="primary" type="submit">➤</button>
+  </form>
  </div>
 </section>
 
 <!-- ПРОФИЛЬ -->
-<section id="profilePage" class="page"
- style="height:100dvh;padding:14px;max-width:800px;margin:auto;width:100%">
-
- <div class="main-panel" style="flex:1">
-
-  <div class="topbar">
-   <h1>Профиль</h1>
-   <button class="icon-btn" onclick="closeProfile()">←</button>
-  </div>
-
-  <div class="content-scroll profile-view">
-
-   <label class="profile-big" for="avatarInput">
-
-    <img id="profileAvatarImg" class="hidden" alt="Аватар">
-
-    <svg id="profilePlaceholder"
-     class="default-avatar-mark"
-     viewBox="0 0 100 100"
-     style="width:75px;height:75px">
-
-     <g fill="none" stroke="currentColor" stroke-width="8">
-      <circle cx="50" cy="27" r="19"/>
-      <circle cx="28" cy="68" r="19"/>
-      <circle cx="72" cy="68" r="19"/>
-     </g>
-
-    </svg>
-
-   </label>
-
-   <input
-    id="avatarInput"
-    type="file"
-    accept="image/*"
-    class="hidden"
-    onchange="changeAvatar(event)"
-   >
-
-   <div class="profile-title" id="profileName"></div>
-
-   <div class="profile-hint">● В сети</div>
-
-   <div class="setting-row">
-    Нажми на аватар, чтобы изменить фотографию профиля.
-   </div>
-
-   <button class="btn full" onclick="closeProfile()">Готово</button>
-
-  </div>
+<section id="profilePage" class="page profile-wrap">
+ <div class="profile-card glass">
+  <button id="profileBack" style="float:left">← Назад</button>
+  <div style="clear:both"></div>
+  <div class="avatar" id="profileAvatar">S</div>
+  <h2 id="profileDisplayName">Пользователь</h2>
+  <p id="profileUsername">@username</p>
+  <input id="avatarInput" type="file" accept="image/*">
+  <button id="saveAvatarButton" class="primary">Загрузить аватарку</button>
+  <p id="profileEmail"></p>
  </div>
 </section>
 
-<!-- НАСТРОЙКИ -->
-<section id="settingsPage" class="page">
- <div class="main-panel" style="width:100%;max-width:700px;margin:auto">
-  <div class="topbar">
-   <h1>Настройки</h1>
-   <button class="icon-btn" onclick="closeProfile()">←</button>
-  </div>
-  <div class="content-scroll">
-   <div class="setting-row">
-    <b>Оформление</b>
-    <p>Тёмная аквамариновая тема Sdon.</p>
-   </div>
-   <div class="setting-row">
-    <b>Безопасность</b>
-    <p>Защита аккаунта через Firebase Authentication.</p>
-   </div>
-   <button class="btn full" onclick="logout()">Выйти из аккаунта</button>
-  </div>
- </div>
-</section>
-
-<!-- ПОДДЕРЖКА -->
-<section id="supportPage" class="page">
- <div class="main-panel" style="width:100%;max-width:700px;margin:auto">
-  <div class="topbar">
-   <h1>Поддержка</h1>
-   <button class="icon-btn" onclick="closeProfile()">←</button>
-  </div>
-  <div class="content-scroll">
-   <div class="empty">
-    <div class="big">✦</div>
-    <b>Поддержка Sdon</b>
-    <span>Если возникла проблема, обратись к администратору проекта.</span>
-  
-   </div>
-  </div>
- </div>
-</section>
-
-<!-- В третьей части начнётся JavaScript -->
 <script>
- 
+// ========================================
+// SDON MESSENGER
+// ========================================
+
+// Firebase configuration
 const firebaseConfig = {
  apiKey: "AIzaSyBb1_LtWZThcdDaJVq-BqQjP8O663LQwXU",
  authDomain: "sdon-messenger.firebaseapp.com",
@@ -1038,148 +368,192 @@ const $ = id => document.getElementById(id);
 let currentUser = null;
 let currentProfile = null;
 let currentChatUser = null;
-let chatListener = null;
+let messagesRef = null;
+let messagesCallback = null;
+let recording = false;
 let mediaRecorder = null;
 let audioChunks = [];
-let recording = false;
+let currentSection = "chats";
 
 function toast(message) {
  const el = $("toast");
- if (!el) return;
  el.textContent = message;
  el.classList.add("show");
- setTimeout(() => el.classList.remove("show"), 2800);
+ clearTimeout(toast.timer);
+ toast.timer = setTimeout(() => el.classList.remove("show"), 3200);
 }
 
-function showPage(id) {
- document.querySelectorAll(".page").forEach(page =>
-  page.classList.remove("active")
- );
- const page = $(id);
- if (page) page.classList.add("active");
+function setPage(id) {
+ document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+ $(id).classList.add("active");
 }
 
-function toggleAuth() {
- $("authPage")?.classList.toggle("active");
- $("regPage")?.classList.toggle("active");
+function setBusy(button, busy, text) {
+ if (!button) return;
+ button.disabled = busy;
+ if (busy) {
+  button.dataset.oldText = button.textContent;
+  button.textContent = text || "Подожди...";
+ } else {
+  button.textContent = button.dataset.oldText || button.textContent;
+ }
 }
 
-function cleanUsername(value) {
- return value.trim().toLowerCase().replace(/[^a-z0-9_]/g, "");
-}
-
-function authError(error) {
- const errors = {
-  "auth/email-already-in-use": "Этот Email уже зарегистрирован",
-  "auth/invalid-email": "Неверный Email",
-  "auth/weak-password": "Пароль должен содержать минимум 6 символов",
-  "auth/user-not-found": "Аккаунт не найден",
-  "auth/wrong-password": "Неверный пароль",
-  "auth/invalid-credential": "Неверный Email или пароль",
-  "auth/network-request-failed": "Проверь интернет",
-  "auth/too-many-requests": "Слишком много попыток. Попробуй позже"
+function friendlyError(error) {
+ console.error(error);
+ const messages = {
+  "auth/email-already-in-use":"Этот Email уже зарегистрирован",
+  "auth/invalid-email":"Неверный Email",
+  "auth/weak-password":"Пароль слишком простой",
+  "auth/user-not-found":"Аккаунт не найден",
+  "auth/wrong-password":"Неверный пароль",
+  "auth/invalid-credential":"Неверный Email или пароль",
+  "auth/too-many-requests":"Слишком много попыток. Попробуй позже",
+  "auth/network-request-failed":"Проблема с интернетом",
+  "PERMISSION_DENIED":"Firebase запретил доступ. Проверь правила базы",
+  "storage/unauthorized":"Firebase Storage запретил загрузку"
  };
- return errors[error.code] || "Ошибка: " + error.message;
+ toast(messages[error.code] || error.message || "Произошла ошибка");
 }
 
-// РЕГИСТРАЦИЯ
+function normalizeUsername(value) {
+ return value.trim().toLowerCase().replace(/^@/,"").replace(/[^a-z0-9_]/g,"");
+}
 
-async function register() {
- const nick = $("regNick")?.value.trim();
- const email = $("regEmail")?.value.trim();
- const password = $("regPass")?.value;
- const repeat = $("regPass2")?.value;
+function showAuth(which) {
+ setPage(which === "register" ? "registerPage" : "authPage");
+}
 
- if (!nick || !email || !password || !repeat) {
-  return toast("Заполни все поля");
- }
+// ========================================
+// REGISTRATION
+// ========================================
 
- if (password.length < 6) {
-  return toast("Пароль должен быть не короче 6 символов");
- }
+$("goRegister").addEventListener("click", () => showAuth("register"));
+$("goLogin").addEventListener("click", () => showAuth("login"));
 
- if (password !== repeat) {
-  return toast("Пароли не совпадают");
- }
+$("registerForm").addEventListener("submit", async event => {
+ event.preventDefault();
 
- const username = cleanUsername(nick);
+ const name = $("registerName").value.trim();
+ const username = normalizeUsername($("registerUsername").value);
+ const email = $("registerEmail").value.trim();
+ const password = $("registerPassword").value;
+ const password2 = $("registerPassword2").value;
+ const button = $("registerButton");
 
- if (username.length < 3) {
-  return toast("Ник должен содержать минимум 3 символа");
- }
+ if (name.length < 2) return toast("Имя слишком короткое");
+ if (username.length < 3) return toast("Ник должен быть минимум 3 символа");
+ if (!/^[a-z0-9_]+$/.test(username)) return toast("В нике допустимы латинские буквы, цифры и _");
+ if (password.length < 6) return toast("Пароль должен быть минимум 6 символов");
+ if (password !== password2) return toast("Пароли не совпадают");
+
+ setBusy(button,true,"Создаю аккаунт...");
+
+ let createdUser = null;
+ let reservedUsername = false;
 
  try {
+  // Сначала создаём пользователя через Firebase Authentication.
+  const credential = await auth.createUserWithEmailAndPassword(email,password);
+  createdUser = credential.user;
+
+  // Атомарно резервируем уникальный ник.
   const usernameRef = db.ref("usernames/" + username);
-  const reservation = await usernameRef.transaction(value => {
-   return value === null ? "reserved" : undefined;
+  const result = await usernameRef.transaction(oldValue => {
+   if (oldValue === null || oldValue === createdUser.uid) {
+    return createdUser.uid;
+   }
+   return;
   });
 
-  if (!reservation.committed) {
-   return toast("Этот ник уже занят");
+  if (!result.committed) {
+   await createdUser.delete();
+   createdUser = null;
+   throw new Error("Этот @username уже занят");
   }
 
-  let result;
+  reservedUsername = true;
 
-  try {
-   result = await auth.createUserWithEmailAndPassword(email, password);
-  } catch (error) {
-   await usernameRef.remove();
-   throw error;
-  }
-
-  currentUser = result.user;
-
-  currentProfile = {
-   uid: currentUser.uid,
-   username,
-   displayName: nick,
-   email,
+  const profile = {
+   uid: createdUser.uid,
+   displayName: name,
+   username: username,
+   email: email,
    avatar: "",
    createdAt: Date.now()
   };
 
-  await Promise.all([
-   db.ref("users/" + currentUser.uid).set(currentProfile),
-   usernameRef.set(currentUser.uid)
-  ]);
+  await db.ref("users/" + createdUser.uid).set(profile);
+  currentUser = createdUser;
+  currentProfile = profile;
 
-  updateProfileUI();
-  showPage("appPage");
-  showSection("chats");
-  toast("Добро пожаловать в SDON!");
+  $("registerForm").reset();
+  await showApplication();
+  toast("Аккаунт SDON создан!");
 
  } catch (error) {
-  console.error(error);
-  toast(authError(error));
+  if (createdUser && !reservedUsername) {
+   try { await createdUser.delete(); } catch (_) {}
+  }
+  if (error.message === "Этот @username уже занят") {
+   toast(error.message);
+  } else {
+   friendlyError(error);
+  }
+ } finally {
+  setBusy(button,false);
  }
-}
+});
 
-// ВХОД
+// ========================================
+// LOGIN
+// ========================================
 
-async function login() {
- const email = $("loginInput")?.value.trim();
- const password = $("passInput")?.value;
+$("loginForm").addEventListener("submit", async event => {
+ event.preventDefault();
 
- if (!email || !password) {
-  return toast("Заполни Email и пароль");
- }
+ const email = $("loginEmail").value.trim();
+ const password = $("loginPassword").value;
+ const button = $("loginButton");
+
+ if (!email || !password) return toast("Заполни Email и пароль");
+
+ setBusy(button,true,"Вхожу...");
 
  try {
-  const result = await auth.signInWithEmailAndPassword(email, password);
-  currentUser = result.user;
-  await loadProfile();
-  showPage("appPage");
-  showSection("chats");
-  toast("Ты вошёл в SDON!");
+  const credential = await auth.signInWithEmailAndPassword(email,password);
+  currentUser = credential.user;
+  await showApplication();
+  $("loginForm").reset();
+  toast("С возвращением!");
  } catch (error) {
-  console.error(error);
-  toast(authError(error));
+  friendlyError(error);
+ } finally {
+  setBusy(button,false);
  }
-}
+});
 
-// ПРОФИЛЬ
+// ========================================
+// AUTH STATE AND PROFILE
+// ========================================
 
-async function loadProfile() {
+auth.onAuthStateChanged(async user => {
+ if (user) {
+  currentUser = user;
+  try {
+   await showApplication();
+  } catch (error) {
+   friendlyError(error);
+  }
+ } else {
+  currentUser = null;
+  currentProfile = null;
+  stopMessagesListener();
+  setPage("authPage");
+ }
+});
+
+async function showApplication() {
  if (!currentUser) return;
 
  const snapshot = await db.ref("users/" + currentUser.uid).once("value");
@@ -1188,564 +562,35 @@ async function loadProfile() {
  if (!currentProfile) {
   currentProfile = {
    uid: currentUser.uid,
-   username: currentUser.email.split("@")[0],
    displayName: currentUser.email.split("@")[0],
+   username: currentUser.email.split("@")[0].replace(/[^a-z0-9_]/gi,""),
+   email: currentUser.email,
    avatar: ""
   };
   await db.ref("users/" + currentUser.uid).set(currentProfile);
  }
 
- updateProfileUI();
+ renderProfile();
+ setPage("appPage");
+ await showSection("chats");
 }
 
-function updateProfileUI() {
+function renderAvatar(element, url, fallback) {
+ element.replaceChildren();
+
+ if (url) {
+  const img = document.createElement("img");
+  img.src = url;
+  img.alt = "Аватар";
+  element.appendChild(img);
+ } else {
+  element.textContent = fallback || "S";
+ }
+}
+
+function renderProfile() {
  if (!currentProfile) return;
 
- const name = currentProfile.displayName || currentProfile.username || "Пользователь";
-
- if ($("sideName")) $("sideName").textContent = name;
- if ($("profileName")) $("profileName").textContent = name;
-
- const avatar = currentProfile.avatar;
-
- if ($("sideAvatar")) {
-  $("sideAvatar").replaceChildren();
-  if (avatar) {
-   const img = document.createElement("img");
-   img.src = avatar;
-   img.alt = "Аватар";
-   $("sideAvatar").appendChild(img);
-  } else {
-   $("sideAvatar").textContent = "●";
-  }
- }
-
- if ($("profileAvatarImg") && $("profilePlaceholder")) {
-  if (avatar) {
-   $("profileAvatarImg").src = avatar;
-   $("profileAvatarImg").classList.remove("hidden");
-   $("profilePlaceholder").classList.add("hidden");
-  } else {
-   $("profileAvatarImg").classList.add("hidden");
-   $("profilePlaceholder").classList.remove("hidden");
-  }
- }
-}
-
-function openProfile() {
- updateProfileUI();
- showPage("profilePage");
-}
-
-function closeProfile() {
- showPage("appPage");
-}
-
-async function changeAvatar(event) {
- const file = event.target.files?.[0];
- if (!file || !currentUser) return;
-
- if (!file.type.startsWith("image/")) {
-  return toast("Выбери изображение");
- }
-
- if (file.size > 5 * 1024 * 1024) {
-  return toast("Размер изображения не должен превышать 5 МБ");
- }
-
- try {
-  toast("Загружаю аватарку...");
-
-  const ref = storage.ref().child(
-   "avatars/" + currentUser.uid + "/" + Date.now()
-  );
-
-  const result = await ref.put(file);
-  const url = await result.ref.getDownloadURL();
-
-  await db.ref("users/" + currentUser.uid + "/avatar").set(url);
-
-  currentProfile.avatar = url;
-  updateProfileUI();
-  toast("Аватарка обновлена!");
- } catch (error) {
-  console.error(error);
-  toast("Не удалось загрузить аватарку");
- }
-}
-
-// ВЫХОД
-
-function logout() {
- auth.signOut().then(() => {
-  if (chatListener) {
-   chatListener.off();
-   chatListener = null;
-  }
-
-  currentUser = null;
-  currentProfile = null;
-  currentChatUser = null;
-
-  showPage("authPage");
-  toast("Ты вышел из аккаунта");
- }).catch(error => toast(error.message));
-}
-
-auth.onAuthStateChanged(async user => {
- if (user) {
-  currentUser = user;
-  try {
-   await loadProfile();
-   showPage("appPage");
-   showSection("chats");
-  } catch (error) {
-   console.error(error);
-   toast("Не удалось загрузить профиль");
-  }
- } else {
-  currentUser = null;
-  showPage("authPage");
- }
-});
-
-// РАЗДЕЛЫ ПРИЛОЖЕНИЯ
-
-function showSection(section) {
- const titles = {
-  chats: "Твои чаты",
-  contacts: "Контакты",
-  settings: "Настройки",
-  support: "Поддержка"
- };
-
- if ($("sectionTitle")) {
-  $("sectionTitle").textContent = titles[section] || "SDON";
- }
-
- document.querySelectorAll(".nav-btn").forEach(button => {
-  button.classList.remove("active");
- });
-
- showPage("appPage");
-
- if (section === "chats") loadChats();
- if (section === "contacts") loadContacts();
-
- if (section === "settings") showPage("settingsPage");
- if (section === "support") showPage("supportPage");
-}
-
-// ПОИСК ПОЛЬЗОВАТЕЛЕЙ
-
-async function searchUsers() {
- const query = cleanUsername($("searchInput")?.value || "");
- const results = $("searchResults");
-
- if (!results) return;
- results.replaceChildren();
-
- if (query.length < 2) return;
-
- try {
-  const snapshot = await db.ref("users").once("value");
-  const users = snapshot.val() || {};
-
-  Object.values(users).forEach(user => {
-   if (
-    user.uid !== currentUser.uid &&
-    (
-     (user.username || "").includes(query) ||
-     (user.displayName || "").toLowerCase().includes(query)
-    )
-   ) {
-    const item = document.createElement("div");
-    item.className = "contact-item";
-
-    const name = document.createElement("span");
-    name.textContent = user.displayName || user.username;
-
-    const button = document.createElement("button");
-    button.textContent = "Добавить";
-    button.onclick = () => addContact(user.uid);
-
-    item.append(name, button);
-    results.appendChild(item);
-   }
-  });
-
-  if (!results.children.length) {
-   results.textContent = "Пользователи не найдены";
-  }
- } catch (error) {
-  console.error(error);
-  toast("Ошибка поиска");
- }
-}
-
-// ДОБАВЛЕНИЕ КОНТАКТОВ
-
-async function addContact(uid) {
- if (!currentUser || uid === currentUser.uid) return;
-
- try {
-  await db.ref(
-   "users/" + currentUser.uid + "/contacts/" + uid
-  ).set(true);
-
-  toast("Контакт добавлен!");
-  loadContacts();
- } catch (error) {
-  console.error(error);
-  toast("Не удалось добавить контакт");
- }
-}
-
-async function getContacts() {
- const snapshot = await db.ref(
-  "users/" + currentUser.uid + "/contacts"
- ).once("value");
-
- const ids = Object.keys(snapshot.val() || {});
- const contacts = [];
-
- for (const uid of ids) {
-  const userSnapshot = await db.ref("users/" + uid).once("value");
-  const user = userSnapshot.val();
-
-  if (user) contacts.push(user);
- }
-
- return contacts;
-}
-
-function createUserItem(user, buttonText, callback) {
- const item = document.createElement("div");
- item.className = "contact-item";
-
- const name = document.createElement("span");
- name.textContent = user.displayName || user.username || "Пользователь";
-
- const button = document.createElement("button");
- button.textContent = buttonText;
- button.onclick = callback;
-
- item.append(name, button);
- return item;
-}
-
-async function loadContacts() {
- const list = $("chatList");
- if (!list || !currentUser) return;
-
- list.replaceChildren();
-
- try {
-  const contacts = await getContacts();
-
-  if (!contacts.length) {
-   list.textContent = "Пока нет контактов. Найди пользователей через поиск.";
-   return;
-  }
-
-  contacts.forEach(user => {
-   list.appendChild(createUserItem(user, "Написать", () => {
-    openChat(user.uid, user.displayName || user.username, user.avatar);
-   }));
-  });
- } catch (error) {
-  console.error(error);
-  toast("Не удалось загрузить контакты");
- }
-}
-
-async function loadChats() {
- await loadContacts();
-}
-
-// СООБЩЕНИЯ
-
-function conversationId(uid1, uid2) {
- return [uid1, uid2].sort().join("_");
-}
-
-function openChat(uid, name, avatar) {
- if (!currentUser || !uid || uid === currentUser.uid) return;
-
- if (chatListener) {
-  chatListener.off();
-  chatListener = null;
- }
-
- currentChatUser = { uid, name, avatar };
-
- if ($("chatUserName")) {
-  $("chatUserName").textContent = name || "Пользователь";
- }
-
- if ($("chatAvatar")) {
-  $("chatAvatar").replaceChildren();
-
-  if (avatar) {
-   const img = document.createElement("img");
-   img.src = avatar;
-   img.alt = "";
-   $("chatAvatar").appendChild(img);
-  } else {
-   $("chatAvatar").textContent = "●";
-  }
- }
-
- showPage("chatPage");
- loadMessages();
-}
-
-function closeChat() {
- if (chatListener) {
-  chatListener.off();
-  chatListener = null;
- }
-
- currentChatUser = null;
- showPage("appPage");
-}
-
-function addMessageToScreen(message) {
- const container = $("messagesContainer");
- if (!container) return;
-
- const item = document.createElement("div");
- item.className = "message";
-
- const mine = message.senderUid === currentUser.uid;
-
- item.style.maxWidth = "80%";
- item.style.padding = "10px 14px";
- item.style.margin = "8px";
- item.style.borderRadius = "15px";
- item.style.alignSelf = mine ? "flex-end" : "flex-start";
- item.style.background = mine
-  ? "rgba(42,190,130,.22)"
-  : "rgba(255,255,255,.09)";
-
- if (message.type === "image") {
-  const img = document.createElement("img");
-  img.src = message.url;
-  img.alt = "Фото";
-  img.style.maxWidth = "220px";
-  img.style.borderRadius = "10px";
-  item.appendChild(img);
- } else if (message.type === "audio") {
-  const audio = document.createElement("audio");
-  audio.controls = true;
-  audio.src = message.url;
-  item.appendChild(audio);
- } else {
-  item.textContent = message.text || "";
- }
-
- const time = document.createElement("small");
- time.textContent = new Date(message.createdAt || Date.now())
-  .toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
- time.style.display = "block";
- time.style.opacity = ".6";
- time.style.marginTop = "5px";
-
- item.appendChild(time);
- container.appendChild(item);
- container.scrollTop = container.scrollHeight;
-}
-
-function loadMessages() {
- if (!currentUser || !currentChatUser) return;
-
- const container = $("messagesContainer");
- if (!container) return;
-
- container.replaceChildren();
-
- const id = conversationId(currentUser.uid, currentChatUser.uid);
- const ref = db.ref("messages/" + id).limitToLast(100);
-
- chatListener = ref;
-
- ref.on("child_added", snapshot => {
-  const message = snapshot.val();
-  if (message) addMessageToScreen(message);
- }, error => {
-  console.error(error);
-  toast("Не удалось загрузить сообщения");
- });
-}
-
-async function sendMessage() {
- if (!currentUser || !currentChatUser) {
-  return toast("Сначала открой чат");
- }
-
- const input = $("msgInput");
- const text = input?.value.trim();
-
- if (!text) return;
-
- const id = conversationId(currentUser.uid, currentChatUser.uid);
-
- try {
-  await db.ref("messages/" + id).push({
-   senderUid: currentUser.uid,
-   text,
-   type: "text",
-   createdAt: Date.now()
-  });
-
-  input.value = "";
- } catch (error) {
-  console.error(error);
-  toast("Сообщение не отправлено");
- }
-}
-
-// ОТПРАВКА ФОТО
-
-async function sendPhoto(event) {
- const file = event.target.files?.[0];
- if (!file || !currentChatUser) return;
-
- if (!file.type.startsWith("image/")) {
-  return toast("Можно отправлять только изображения");
- }
-
- if (file.size > 10 * 1024 * 1024) {
-  return toast("Фото слишком большое. Максимум 10 МБ");
- }
-
- try {
-  toast("Отправляю фото...");
-
-  const id = conversationId(currentUser.uid, currentChatUser.uid);
-  const ref = storage.ref().child(
-   "messages/" + id + "/" + Date.now() + "_" + file.name
-  );
-
-  const result = await ref.put(file);
-  const url = await result.ref.getDownloadURL();
-
-  await db.ref("messages/" + id).push({
-   senderUid: currentUser.uid,
-   type: "image",
-   url,
-   createdAt: Date.now()
-  });
-
-  toast("Фото отправлено!");
- } catch (error) {
-  console.error(error);
-  toast("Не удалось отправить фото");
- }
-
- event.target.value = "";
-}
-
-// ЭМОДЗИ
-
-function toggleEmoji() {
- const picker = $("emojiPicker");
- if (picker) picker.classList.toggle("hidden");
-}
-
-function addEmoji(emoji) {
- const input = $("msgInput");
- if (!input) return;
-
- input.value += emoji;
- input.focus();
-}
-
-// ГОЛОСОВЫЕ СООБЩЕНИЯ
-
-async function toggleVoice() {
- if (recording) {
-  mediaRecorder?.stop();
-  return;
- }
-
- if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
-  return toast("Запись голоса не поддерживается этим браузером");
- }
-
- try {
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-
-  audioChunks = [];
-  mediaRecorder = new MediaRecorder(stream);
-
-  mediaRecorder.ondataavailable = event => {
-   if (event.data.size > 0) audioChunks.push(event.data);
-  };
-
-  mediaRecorder.onstop = async () => {
-   const blob = new Blob(audioChunks, {
-    type: mediaRecorder.mimeType || "audio/webm"
-   });
-
-   stream.getTracks().forEach(track => track.stop());
-   recording = false;
-
-   if ($("voiceBtn")) $("voiceBtn").textContent = "🎙";
-
-   if (!currentChatUser || blob.size === 0) return;
-
-   try {
-    toast("Отправляю голосовое сообщение...");
-
-    const id = conversationId(currentUser.uid, currentChatUser.uid);
-    const ref = storage.ref().child(
-     "messages/" + id + "/voice_" + Date.now() + ".webm"
-    );
-
-    const result = await ref.put(blob);
-    const url = await result.ref.getDownloadURL();
-
-    await db.ref("messages/" + id).push({
-     senderUid: currentUser.uid,
-     type: "audio",
-     url,
-     createdAt: Date.now()
-    });
-
-    toast("Голосовое отправлено!");
-   } catch (error) {
-    console.error(error);
-    toast("Не удалось отправить запись");
-   }
-  };
-
-  mediaRecorder.start();
-  recording = true;
-
-  if ($("voiceBtn")) $("voiceBtn").textContent = "⏹";
-  toast("Идёт запись. Нажми ещё раз, чтобы остановить");
-
- } catch (error) {
-  console.error(error);
-  toast("Нет доступа к микрофону");
- }
-}
-
-// АВТОПЕРЕХОД ПРИ НАЖАТИИ ENTER
-
-$("msgInput")?.addEventListener("keydown", event => {
- if (event.key === "Enter" && !event.shiftKey) {
-  event.preventDefault();
-  sendMessage();
- }
-});
-
-$("searchInput")?.addEventListener("input", searchUsers);
-
-console.log("SDON Messenger загружен 💚");
-
-</script>
-</body>
-</html>
-
+ $("sideName").textContent = currentProfile.displayName || "Пользователь";
+ $("sideHandle").textContent = "@" + (currentProfile.username || "user");
+ rend
